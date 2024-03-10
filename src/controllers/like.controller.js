@@ -1,4 +1,3 @@
-import mongoose, {isValidObjectId} from "mongoose"
 import {Like} from "../models/like.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
@@ -181,6 +180,33 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
 const getLikedVideos = asyncHandler(async (req, res) => {
     //TODO: get all liked videos
+    try {
+        const {userId} = req.user?._id
+        
+        const likedVideos = await Like.find(
+            {
+                likedBy: userId,
+                video: {
+                    $ne: null
+                }
+            }
+        )
+
+        if(!likedVideos)
+        {
+            throw new ApiError(404, "No videos found")
+        }
+
+        res.status(200).json(
+            new ApiResponse(
+                200,
+                likedVideos,
+                "All liked videos fetched successfully"
+            )
+        )
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Error while fetching liked videos")
+    }
 })
 
 export {
