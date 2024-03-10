@@ -27,4 +27,42 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-export {uploadOnCloudinary}
+const deleteThumbnailOnCloudinary = async (url) => {
+    try {
+        const publicId = url.split("/").pop().split(".")[0]
+        
+        if(!publicId)
+        {
+            return console.log("No public Id present")
+        }
+
+        await cloudinary.uploader.destroy(publicId)
+        .then((result) => {console.log(result)})
+    } 
+    catch (error) {
+        console.log(error.message)
+    }
+}
+
+const deleteVideoOnCloudinary = async (url) => {
+    
+    try {
+        const publicId = url.split("/").pop().split(".")[0]
+    
+        if(!publicId)
+        {
+            return console.log("No public Id present")
+        }
+    
+        await cloudinary.uploader.destroy(publicId,{resource_type: "video"})
+        .then((result) => {console.log(result)})
+    } catch (error) {
+        console.log(error.message)
+    }
+}
+
+export {
+    uploadOnCloudinary,
+    deleteThumbnailOnCloudinary,
+    deleteVideoOnCloudinary
+}
