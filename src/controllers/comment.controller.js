@@ -22,7 +22,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
             throw new ApiError(404, "Video not found")
         }
 
-        const comments = await Comment.aggregate(
+        const comments = await Comment.aggregate([
             {
                 $match: {
                     video: new mongoose.Types.ObjectId(videoId)
@@ -57,7 +57,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
             {
                 $limit: limit
             }
-        )
+        ])
 
         if(!comments || comments.length === 0)
         {
@@ -81,7 +81,6 @@ const getVideoComments = asyncHandler(async (req, res) => {
     catch (error) {
         throw new ApiError(500, error?.message || "Error while fetching comments")
     }
-
 })
 
 const addComment = asyncHandler(async (req, res) => {
