@@ -20,8 +20,57 @@ const isUserOwner = (video, req) => {
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
+    const { page = 1, limit = 10, query = "", sortBy = "createdAt", sortType = "desc"} = req.query
+
+    if(!isValidObjectId(req.user?._id))
+    {
+        throw new ApiError(400, "Invalid User Id")
+    }
+
+    try {
+        const videos = await Video.aggregate([
+            {
+                $match: {
+                    owner: req.user?._id,
+                    title: {
+                        $regex: query,
+                        $options: "i"
+                    }
+                }
+            }
+        ]).sort({
+            [`${sortType}`]: `${sortBy}`
+        })
+
+        const options = {
+            page,
+            limit
+        }
+        
+        const data = await Video.aggregatePaginate(
+            videos,
+            options,
+            (err, result) => {
+                if(err)
+                {
+                    throw new ApiError(400, "Videos pagination failed!")
+                }
+                return result
+            }
+        )
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                data,
+                "Videos fetched successfully"
+            )
+        )
+    }
+    catch (error) {
+        throw new ApiError(500, error?.message || "Error while fetching videos")
+    }
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
